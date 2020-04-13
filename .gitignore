@@ -78,8 +78,10 @@ typings/
 # Next.js build output
 .next
 
-# Nuxt.js build / generate output
+# Nuxt.js build
 .nuxt
+
+# generate output
 dist
 
 # Gatsby files
@@ -102,3 +104,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# IntelliJ
+.idea/
