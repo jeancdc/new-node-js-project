@@ -1,6 +1,10 @@
 const gulp = require('gulp');
 const ts = require('gulp-typescript');
 const del = require('del');
+const exec = require('child_process').exec;
+const childProcess = require('child_process');
+const spawn = require('child_process').spawn;
+const { execFile } = require('child_process').execFile;
 
 const tsProject = ts.createProject('tsconfig.json');
 
@@ -28,7 +32,7 @@ function copyPublic() {
 }
 
 function copyViews() {
-    return gulp.src('views/*')
+    return gulp.src('src/views/*')
         .pipe(gulp.dest('dist/views'));
 }
 
@@ -40,23 +44,62 @@ async function copyFiles() {
 
 async function buildProject() {
     await clean();
-    await transpile();
     await copyFiles();
+    await transpile();
 }
 
-function watch() {
+function watchSource() {
     gulp.watch(['src/**/*.ts'], transpile);
-    // gulp.watch(['bin/www'], copyBin());  TODO to fix: it doesn't work
-    gulp.watch(['views/*'], copyViews);
+    gulp.watch(['src/views/*'], copyViews);
     gulp.watch(['public/**/*'], copyPublic);
 }
 
-gulp.task('watch', function() {
-    watch();
+function watchBuild() {
+    exec('nodemon ./dist/bin/www --watch dist');
+}
+
+gulp.task('copy-server', async function () {
+   await copyBin();
 });
 
-gulp.task('build-project', async function() {
+gulp.task('watch-source', function () {
+    watchSource();
+});
+
+gulp.task('watch-build', async function () {
+    const cmd = exec('./node_modules/.bin/nodemon ./dist/bin/www --watch dist');
+    process.stdin.pipe(cmd.stdin);
+    cmd.stdout.on('data', (data) => {
+        console.log(data);
+    });
+
+    return cmd;
+});
+
+gulp.task('build-project', async function () {
     await buildProject();
 });
 
-gulp.task('start', gulp.series('build-project', 'watch'));
+gulp.task('dev', gulp.series(
+    'build-project',
+    gulp.parallel(
+        'watch-source',
+        'watch-build',
+    ),
+));
+
+// test
+
+gulp.task('list', async function() {
+    /* const cmd = exec('./node_modules/.bin/nodemon ./dist/bin/www --watch dist');
+    process.stdin.pipe(cmd.stdin);
+    cmd.stdout.on('data', (data) => {
+        console.log(data);
+    });
+    return cmd; */
+
+    const { stdout, stderr } = await exec('./node_modules/.bin/nodemon ./dist/bin/www --watch dist');
+    stdout.on('data', (data) => {
+        console.log(JSON.stringify(data));
+    });
+});
