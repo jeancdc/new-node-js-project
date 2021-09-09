@@ -7,7 +7,7 @@ chai.use(chaiHttp);
 
 const expect = chai.expect;
 
-describe('index route', () => {
+describe('--- index route ---', () => {
 
     describe('GET /', () => {
         it('should return the title', async () => {
