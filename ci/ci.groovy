@@ -4,12 +4,26 @@ pipeline {
     stages {
         stage('Node.js version') {
             steps {
+                echo '### Display Node.js version ###'
                 sh 'node -v'
             }
         }
-        stage('build') {
+        stage('Install libraries') {
             steps {
-                echo 'Just a test'
+                echo '### Install the libraries ###'
+                sh 'yarn install --frozen-lockfile'
+            }
+        }
+        stage('Build') {
+            steps {
+                echo '### Build the project ###'
+                sh 'yarn build'
+            }
+        }
+        stage('Unit tests') {
+            steps {
+                echo '### Execute the unit tests ###'
+                sh 'yarn test'
             }
         }
     }
